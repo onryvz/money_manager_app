@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}Hesaplar{% endblock %}
+{% block content %}
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>Hesaplar</h1>
+    <h4>Toplam Bakiye: <span class="text-success">{{ total_balance }}</span></h4>
+  </div>
+  <div class="row">
+    {% for acc in accounts %}
+    <div class="col-md-4 mb-3">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">{{ acc.name }}</h5>
+          <p class="card-text fs-4 {% if acc.balance >= 0 %}text-success{% else %}text-danger{% endif %}">
+            {{ acc.balance }}</p>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+{% endblock %}

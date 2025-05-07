@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}İşlem Düzenle{% endblock %}
+{% block content %}
+  <h1 class="mb-3">İşlem Düzenle</h1>
+  <div class="card p-4 shadow-sm">
+    <form method="post" class="row g-3">
+      <div class="col-md-3">
+        <label class="form-label">Tarih</label>
+        <input type="date" name="date" value="{{ tr.date }}" class="form-control" required>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Hesap</label>
+        <select name="account" class="form-select">
+          {% for acc in accounts %}
+          <option value="{{ acc.id }}" {% if tr.account_id==acc.id %}selected{% endif %}>{{ acc.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Kategori</label>
+        <select name="category" class="form-select">
+          {% for cat in categories %}
+          <option value="{{ cat.id }}" {% if tr.category_id==cat.id %}selected{% endif %}>{{ cat.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Tutar</label>
+        <input type="number" step="0.01" name="amount" value="{{ tr.amount }}" class="form-control" required>
+      </div>
+      <div class="col-12">
+        <label class="form-label">Açıklama</label>
+        <input type="text" name="description" value="{{ tr.description }}" class="form-control">
+      </div>
+      <div class="col-12 text-end">
+        <button type="submit" class="btn btn-primary">Güncelle</button>
+      </div>
+    </form>
+  </div>
+{% endblock %}

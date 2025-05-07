@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+  <h1 class="mb-4">Dashboard</h1>
+  <div class="row mb-4">
+    <div class="col-md-4">
+      <div class="card p-3 text-center">
+        <h5>Toplam Bakiye</h5>
+        <p class="fs-3 text-primary">{{ total_balance }}</p>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card p-3 text-center">
+        <h5>Toplam Gelir</h5>
+        <p class="fs-3 text-success">{{ income }}</p>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card p-3 text-center">
+        <h5>Toplam Gider</h5>
+        <p class="fs-3 text-danger">{{ expense }}</p>
+      </div>
+    </div>
+  </div>
+  <div class="card p-3 mb-4">
+    <h5>Kategori Dağılımı</h5>
+    <canvas id="pieChart" width="300" height="300" aria-label="Kategori Dağılımı Grafiği" role="img"></canvas>
+  </div>
+{% endblock %}
+{% block scripts %}
+  {{ super() }}
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const labels = {{ labels|tojson }};
+      const data = {{ data|tojson }};
+      const colors = labels.map((_, i) => `hsl(${i * 360 / labels.length}, 70%, 60%)`);
+      const ctx = document.getElementById('pieChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: labels,
+          datasets: [{ data: data, backgroundColor: colors }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { position: 'bottom' } }
+        }
+      });
+    });
+  </script>
+{% endblock %}

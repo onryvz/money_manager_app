@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}İşlemler{% endblock %}
+{% block content %}
+  <h1 class="mb-3">İşlemler</h1>
+  <div class="card mb-4">
+    <div class="card-body">
+      <form method="get" class="row g-3">
+        <div class="col-md-2">
+          <input type="date" name="start" value="{{ filter.start or '' }}" class="form-control">
+        </div>
+        <div class="col-md-2">
+          <input type="date" name="end" value="{{ filter.end or '' }}" class="form-control">
+        </div>
+        <div class="col-md-3">
+          <select name="account" class="form-select">
+            <option value="">Tüm Hesaplar</option>
+            {% for acc in accounts %}
+            <option value="{{ acc.id }}" {% if filter.account==acc.id %}selected{% endif %}>{{ acc.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-3">
+          <select name="category" class="form-select">
+            <option value="">Tüm Kategoriler</option>
+            {% for cat in categories %}
+            <option value="{{ cat.id }}" {% if filter.category==cat.id %}selected{% endif %}>{{ cat.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2">
+          <button type="submit" class="btn btn-secondary w-100">Filtrele</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <table class="table table-hover align-middle">
+    <thead class="table-light">
+      <tr>
+        <th>Tarih</th><th>Hesap</th><th>Kategori</th><th class="text-end">Tutar</th><th>Açıklama</th><th>İşlem</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for tr in transactions %}
+      <tr>
+        <td>{{ tr.date }}</td>
+        <td>{{ tr.account.name }}</td>
+        <td>{{ tr.category.name }}</td>
+        <td class="text-end {% if tr.amount >= 0 %}text-success{% else %}text-danger{% endif %}">{{ tr.amount }}</td>
+        <td>{{ tr.description }}</td>
+        <td>
+          <a href="/transactions/{{ tr.id }}/edit" class="btn btn-sm btn-outline-primary me-1">✏️</a>
+          <form action="/transactions/{{ tr.id }}/delete" method="post" style="display:inline">
+            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Silmek istediğine emin misin?');">🗑️</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}
