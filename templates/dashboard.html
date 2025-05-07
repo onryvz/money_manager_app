@@ -22,9 +22,9 @@
       </div>
     </div>
   </div>
-  <div class="card p-3 mb-4">
+  <div class="card p-3 mb-4 mx-auto" style="max-width:400px; position: relative; height: 300px;">
     <h5>Kategori Dağılımı</h5>
-    <canvas id="pieChart" width="300" height="300" aria-label="Kategori Dağılımı Grafiği" role="img"></canvas>
+    <canvas id="pieChart" aria-label="Kategori Dağılımı Grafiği" role="img" style="position: absolute; top: 40px; left: 0; width: 100%; height: calc(100% - 40px);"></canvas>
   </div>
 {% endblock %}
 {% block scripts %}
@@ -33,8 +33,8 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
-      const labels = {{ labels|tojson }};
-      const data = {{ data|tojson }};
+      const labels = {{ chart_labels|tojson }};
+      const data   = {{ chart_values|tojson }};
       const colors = labels.map((_, i) => `hsl(${i * 360 / labels.length}, 70%, 60%)`);
       const ctx = document.getElementById('pieChart').getContext('2d');
       new Chart(ctx, {
@@ -45,6 +45,7 @@
         },
         options: {
           responsive: true,
+          maintainAspectRatio: false,
           plugins: { legend: { position: 'bottom' } }
         }
       });

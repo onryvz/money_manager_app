@@ -1,60 +1,301 @@
 {% extends 'base.html' %}
 {% block title %}İşlemler{% endblock %}
+
 {% block content %}
   <h1 class="mb-3">İşlemler</h1>
-  <div class="card mb-4">
-    <div class="card-body">
-      <form method="get" class="row g-3">
-        <div class="col-md-2">
-          <input type="date" name="start" value="{{ filter.start or '' }}" class="form-control">
-        </div>
-        <div class="col-md-2">
-          <input type="date" name="end" value="{{ filter.end or '' }}" class="form-control">
-        </div>
-        <div class="col-md-3">
-          <select name="account" class="form-select">
-            <option value="">Tüm Hesaplar</option>
-            {% for acc in accounts %}
-            <option value="{{ acc.id }}" {% if filter.account==acc.id %}selected{% endif %}>{{ acc.name }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="col-md-3">
-          <select name="category" class="form-select">
-            <option value="">Tüm Kategoriler</option>
-            {% for cat in categories %}
-            <option value="{{ cat.id }}" {% if filter.category==cat.id %}selected{% endif %}>{{ cat.name }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="col-md-2">
-          <button type="submit" class="btn btn-secondary w-100">Filtrele</button>
-        </div>
-      </form>
+
+  <!-- Filtre Formu -->
+  <form id="filter-form" class="row g-3 mb-3" method="get" action="{{ url_for('main.show_transactions') }}">
+    <div class="col-md-3">
+      <label class="form-label">Hesap</label>
+      <select name="account" id="filter-account" class="form-select auto-submit">
+        <option value="">Tümü</option>
+        {% for acc in accounts %}
+          <option value="{{ acc.id }}" {% if filter.account == acc.id %}selected{% endif %}>{{ acc.name }}</option>
+        {% endfor %}
+      </select>
     </div>
+    <div class="col-md-3">
+      <label class="form-label">Kategori</label>
+      <select name="category" id="filter-category" class="form-select auto-submit">
+        <option value="">Tümü</option>
+        {% for cat in categories %}
+          <option value="{{ cat.id }}" {% if filter.category == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2">
+      <label class="form-label">Başlangıç</label>
+      <input type="date" name="start" id="filter-start" class="form-control auto-submit" value="{{ filter.start }}">
+    </div>
+    <div class="col-md-2">
+      <label class="form-label">Bitiş</label>
+      <input type="date" name="end" id="filter-end" class="form-control auto-submit" value="{{ filter.end }}">
+    </div>
+    <div class="col-md-2 d-flex align-items-end">
+      <button type="button" id="clear-filters" class="btn btn-outline-secondary w-100">Temizle</button>
+    </div>
+  </form>
+
+  <!-- Yeni Satır Ekle -->
+  <button id="add-row" class="btn btn-sm btn-success mb-2">Yeni Satır Ekle</button>
+
+  <div class="table-responsive">
+    <table class="table table-hover align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Tarih</th>
+          <th>Hesap</th>
+          <th>Kategori</th>
+          <th class="text-end">Tutar</th>
+          <th>Açıklama</th>
+          <th>İşlem</th>
+          <th>Geri Al</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for tr in transactions %}
+        <tr data-id="{{ tr.id }}">
+          <td>
+            <input type="date"
+                   class="form-control form-control-sm field"
+                   data-field="date"
+                   value="{{ tr.date }}">
+          </td>
+          <td>
+            <select class="form-select form-select-sm field" data-field="account">
+              {% for acc in accounts %}
+                <option value="{{ acc.id }}" {% if tr.account_id == acc.id %}selected{% endif %}>{{ acc.name }}</option>
+              {% endfor %}
+            </select>
+          </td>
+          <td>
+            <select class="form-select form-select-sm field" data-field="category">
+              {% for cat in categories %}
+                <option value="{{ cat.id }}" {% if tr.category_id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+              {% endfor %}
+            </select>
+          </td>
+          <td>
+            <input type="number" step="0.01"
+                   class="form-control form-control-sm field text-end"
+                   data-field="amount"
+                   value="{{ '%.2f'|format(tr.amount) }}">
+          </td>
+          <td class="position-relative">
+            <input type="text"
+                   class="form-control form-control-sm field desc-input"
+                   data-field="description"
+                   autocomplete="off"
+                   value="{{ tr.description }}">
+            <ul class="list-group suggestion-list position-absolute w-100 d-none"></ul>
+          </td>
+          <td></td>
+          <td>
+            <button class="btn btn-sm btn-outline-secondary undo-btn">⟲</button>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
-  <table class="table table-hover align-middle">
-    <thead class="table-light">
-      <tr>
-        <th>Tarih</th><th>Hesap</th><th>Kategori</th><th class="text-end">Tutar</th><th>Açıklama</th><th>İşlem</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for tr in transactions %}
-      <tr>
-        <td>{{ tr.date }}</td>
-        <td>{{ tr.account.name }}</td>
-        <td>{{ tr.category.name }}</td>
-        <td class="text-end {% if tr.amount >= 0 %}text-success{% else %}text-danger{% endif %}">{{ tr.amount }}</td>
-        <td>{{ tr.description }}</td>
-        <td>
-          <a href="/transactions/{{ tr.id }}/edit" class="btn btn-sm btn-outline-primary me-1">✏️</a>
-          <form action="/transactions/{{ tr.id }}/delete" method="post" style="display:inline">
-            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Silmek istediğine emin misin?');">🗑️</button>
-          </form>
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const filterForm = document.getElementById('filter-form');
+
+      // Otomatik filtre submit
+      document.querySelectorAll('.auto-submit').forEach(el => {
+        el.addEventListener('change', () => filterForm.submit());
+      });
+
+      // Temizle butonu
+      document.getElementById('clear-filters').addEventListener('click', () => {
+        document.getElementById('filter-account').value = '';
+        document.getElementById('filter-category').value = '';
+        document.getElementById('filter-start').value = '';
+        document.getElementById('filter-end').value = '';
+        filterForm.submit();
+      });
+
+      // Inline edit & undo
+      const originalData = {};
+      document.querySelectorAll('tbody tr').forEach(tr => {
+        const id = tr.dataset.id;
+        originalData[id] = {};
+        tr.querySelectorAll('.field').forEach(el => {
+          originalData[id][el.dataset.field] = el.value;
+        });
+      });
+      document.querySelectorAll('.field').forEach(el => {
+        el.addEventListener('change', function() {
+          const tr = this.closest('tr');
+          const id = tr.dataset.id;
+          const field = this.dataset.field;
+          const value = this.value;
+          // Validation
+          if (field === 'amount' && isNaN(parseFloat(value))) {
+            alert('Tutar geçerli bir sayı olmalı!');
+            this.value = originalData[id][field];
+            return;
+          }
+          if (field === 'date' && !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+            alert('Tarih formatı YYYY-MM-DD olmalı!');
+            this.value = originalData[id][field];
+            return;
+          }
+          fetch(`/transactions/${id}/update_field`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ field: field, value: value })
+          })
+          .then(r => r.json())
+          .then(data => {
+            if (!data.success) {
+              alert('Güncelleme başarısız');
+              this.value = originalData[id][field];
+            } else {
+              this.classList.add('is-valid');
+              setTimeout(() => this.classList.remove('is-valid'), 1000);
+            }
+          });
+        });
+      });
+      document.querySelectorAll('.undo-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const tr = this.closest('tr');
+          const id = tr.dataset.id;
+          Object.entries(originalData[id]).forEach(([field, val]) => {
+            const el = tr.querySelector(`[data-field="${field}"]`);
+            if (!el) return;
+            el.value = val;
+            fetch(`/transactions/${id}/update_field`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ field: field, value: val })
+            });
+          });
+        });
+      });
+
+      // Yeni satır ekleme
+      document.getElementById('add-row').addEventListener('click', function() {
+        const tbody = document.querySelector('tbody');
+        const tr = document.createElement('tr');
+        tr.classList.add('new-row');
+        tr.innerHTML = `
+          <td><input type="date" class="form-control form-control-sm new-field" data-field="date" value="{{ current_date }}"></td>
+          <td><select class="form-select form-select-sm new-field" data-field="account">
+            {% for acc in accounts %}<option value="{{ acc.id }}">{{ acc.name }}</option>{% endfor %}
+          </select></td>
+          <td><select class="form-select form-select-sm new-field" data-field="category">
+            {% for cat in categories %}<option value="{{ cat.id }}">{{ cat.name }}</option>{% endfor %}
+          </select></td>
+          <td><input type="number" step="0.01" class="form-control form-control-sm new-field text-end" data-field="amount" value="0.00"></td>
+          <td class="position-relative">
+            <input type="text" class="form-control form-control-sm new-field desc-input" data-field="description" autocomplete="off">
+            <ul class="list-group suggestion-list position-absolute w-100 d-none"></ul>
+          </td>
+          <td colspan="2">
+            <button class="btn btn-sm btn-success save-btn">✅ Kaydet</button>
+            <button class="btn btn-sm btn-secondary cancel-btn">❌ İptal</button>
+          </td>`;
+        tbody.prepend(tr);
+
+        // Yeni row için autocomplete ata
+        attachAutocomplete(tr.querySelector('.desc-input'));
+
+        // Kaydet
+        tr.querySelector('.save-btn').addEventListener('click', function() {
+          const data = {};
+          tr.querySelectorAll('.new-field').forEach(el => data[el.dataset.field] = el.value);
+          fetch('/transactions/create', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          })
+          .then(r => r.json())
+          .then(res => {
+            if (res.success) location.reload();
+            else alert('Oluşturma başarısız');
+          });
+        });
+        // İptal
+        tr.querySelector('.cancel-btn').addEventListener('click', () => tr.remove());
+      });
+
+      // Açıklama autocomplete fonksiyonu
+      // Açıklama autocomplete fonksiyonu (güncellenmiş)
+      function attachAutocomplete(input) {
+        const ul = input.parentElement.querySelector('.suggestion-list');
+        let debounceTimer;
+        input.addEventListener('input', function() {
+          clearTimeout(debounceTimer);
+          const q = this.value.trim();
+          if (q.length < 2) {
+            ul.classList.add('d-none');
+            return;
+          }
+          debounceTimer = setTimeout(() => {
+            fetch(`/transactions/suggest?q=${encodeURIComponent(q)}`)
+              .then(res => res.json())
+              .then(list => {
+                const uniq = [];
+                const seen = new Set();
+                list.forEach(item => {
+                  const key = `${item.description}||${item.account_id}||${item.category_id}`;
+                  if (!seen.has(key)) {
+                    seen.add(key);
+                    uniq.push(item);
+                  }
+                });
+                ul.innerHTML = '';
+                if (uniq.length === 0) {
+                  ul.classList.add('d-none');
+                  return;
+                }
+                uniq.forEach(item => {
+                  const li = document.createElement('li');
+                  li.className = 'list-group-item list-group-item-action py-1';
+                  li.textContent = item.description;
+                  li.dataset.account = item.account_id;
+                  li.dataset.category = item.category_id;
+                  li.dataset.amount = item.amount;
+                  ul.appendChild(li);
+                });
+                ul.classList.remove('d-none');
+              });
+          }, 300);
+        });
+
+        ul.addEventListener('click', function(e) {
+          if (e.target.tagName !== 'LI') return;
+          const li = e.target;
+          input.value = li.textContent;
+          ul.classList.add('d-none');
+          const tr = input.closest('tr');
+          tr.querySelector('select[data-field=\"account\"]').value = li.dataset.account;
+          tr.querySelector('select[data-field=\"category\"]').value = li.dataset.category;
+          tr.querySelector('input[data-field=\"amount\"]').value = parseFloat(li.dataset.amount).toFixed(2);
+        });
+
+        input.addEventListener('blur', () => {
+          setTimeout(() => ul.classList.add('d-none'), 200);
+        });
+        input.addEventListener('focus', () => {
+          if (input.value.trim().length >=2 && ul.children.length>0) {
+            ul.classList.remove('d-none');
+          }
+        });
+      }
+
+      // Mevcut ve yeni satırlara ata
+      document.querySelectorAll('.desc-input').forEach(inp => attachAutocomplete(inp));
+      // Yeni satır ekleme kodunda da attachAutocomplete çağrısı zaten var
+
+    });
+  </script>
 {% endblock %}

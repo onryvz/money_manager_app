@@ -1,51 +1,67 @@
 /* Apple-inspired overrides */
 :root {
-    --bs-card-border-radius: 20px;
-    --bs-btn-border-radius: 12px;
-    --bs-card-box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    --bs-input-border-radius: 12px;
-    --bs-primary: #007aff;
-    --bs-secondary: #8e8e93;
-  }
-  
-  .card {
-    border-radius: var(--bs-card-border-radius) !important;
-    box-shadow: var(--bs-card-box-shadow) !important;
-    border: none !important;
-  }
-  
-  .btn-primary {
-    background-color: var(--bs-primary) !important;
-    border-color: var(--bs-primary) !important;
-    border-radius: var(--bs-btn-border-radius) !important;
-  }
-  
-  .btn-secondary {
-    background-color: var(--bs-secondary) !important;
-    border-color: var(--bs-secondary) !important;
-  }
-  
-  .form-control, .form-select {
-    border-radius: var(--bs-input-border-radius) !important;
-    border: 1px solid #ced0d4;
-    padding: 10px 12px;
-  }
-  
-  .table {
-    background-color: #ffffff;
-    border-radius: var(--bs-card-border-radius);
-    overflow: hidden;
-  }
-  
-  .table thead {
-    background-color: #f2f2f5;
-  }
-  
-  .navbar {
-    font-size: 17px;
-  }
-  
-  h1, h4 {
-    font-weight: 600;
-    color: #1c1c1e;
-  }
+  --bs-card-border-radius: 20px;
+  --bs-btn-border-radius: 12px;
+  --bs-card-box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  --bs-input-border-radius: 12px;
+  --bs-primary: #007aff;
+  --bs-secondary: #8e8e93;
+}
+
+.card {
+  border-radius: var(--bs-card-border-radius) !important;
+  box-shadow: var(--bs-card-box-shadow) !important;
+  border: none !important;
+}
+
+.btn-primary {
+  background-color: var(--bs-primary) !important;
+  border-color: var(--bs-primary) !important;
+  border-radius: var(--bs-btn-border-radius) !important;
+}
+
+.btn-secondary {
+  background-color: var(--bs-secondary) !important;
+  border-color: var(--bs-secondary) !important;
+}
+
+.form-control,
+.form-select {
+  border-radius: var(--bs-input-border-radius) !important;
+  border: 1px solid #ced0d4;
+  padding: 10px 12px;
+}
+
+.table {
+  background-color: #ffffff;
+  border-radius: var(--bs-card-border-radius);
+  overflow: hidden;
+}
+
+.table thead {
+  background-color: #f2f2f5;
+}
+
+.navbar {
+  font-size: 17px;
+}
+
+/* suggestion-list’in taşan kısmını göstermeye zorla */
+.table-responsive {
+  overflow: visible !important;
+}
+
+/* öneri kutusuna stil ve z‑index */
+.suggestion-list {
+  background: #fff;
+  border: 1px solid #ccc;
+  max-height: 150px;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+h1,
+h4 {
+  font-weight: 600;
+  color: #1c1c1e;
+}

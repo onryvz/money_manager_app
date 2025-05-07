@@ -1,46 +1,26 @@
-# routes.py
-from flask import Blueprint, render_template, request, redirect, url_for
+from flask import Blueprint, render_template, request, redirect, url_for, jsonify
 from models import Account, Category, Transaction, db
-from datetime import datetime
+from datetime import datetime, date
+from sqlalchemy import func
 
 bp = Blueprint('main', __name__)
 
 @bp.route('/')
 def index():
-    return redirect(url_for('main.dashboard'))
-
-@bp.route('/dashboard')
-def dashboard():
-    # Genel özet
-    accounts = Account.query.all()
-    transactions = Transaction.query.order_by(Transaction.date.desc()).all()
-    total_balance = sum(acc.balance for acc in accounts)
-    # Gelir ve gider toplamları
-    income = sum(tr.amount for tr in transactions if tr.amount > 0)
-    expense = -sum(tr.amount for tr in transactions if tr.amount < 0)
-    # Kategori bazlı dağılım
-    cat_data = db.session.query(Category.name, db.func.sum(Transaction.amount)) \
-        .join(Transaction).group_by(Category.id).all()
-    labels = [c[0] for c in cat_data]
-    data = [abs(c[1]) for c in cat_data]
-    return render_template('dashboard.html', total_balance=total_balance,
-                           income=income, expense=expense,
-                           labels=labels, data=data)
-
-@bp.route('/accounts')
-def show_accounts():
-    accounts = Account.query.all()
-    total_balance = sum(acc.balance for acc in accounts)
-    return render_template('accounts.html', accounts=accounts, total_balance=total_balance)
+    return redirect(url_for('main.show_transactions'))
 
 @bp.route('/transactions')
 def show_transactions():
+    # Başlangıç query
+    query = Transaction.query
+
+    # Filtre parametreleri
     account_id = request.args.get('account', type=int)
     category_id = request.args.get('category', type=int)
     start = request.args.get('start')
     end = request.args.get('end')
 
-    query = Transaction.query
+    # Filtre uygulama
     if account_id:
         query = query.filter_by(account_id=account_id)
     if category_id:
@@ -50,62 +30,161 @@ def show_transactions():
     if end:
         query = query.filter(Transaction.date <= datetime.strptime(end, '%Y-%m-%d').date())
 
+    # Sonuçları tarih desc. olarak al
     transactions = query.order_by(Transaction.date.desc()).all()
+
+    # Filtre formu için hesap ve kategori listesi
     accounts = Account.query.all()
     categories = Category.query.all()
-    return render_template('transactions.html', transactions=transactions,
-                           accounts=accounts, categories=categories,
-                           filter={'account': account_id, 'category': category_id, 'start': start, 'end': end})
+
+    return render_template(
+        'transactions.html',
+        transactions=transactions,
+        accounts=accounts,
+        categories=categories,
+        filter={
+            'account': account_id,
+            'category': category_id,
+            'start': start,
+            'end': end
+        },
+        current_date=date.today().isoformat()
+    )
+
+@bp.route('/transactions/create', methods=['POST'])
+def create_transaction():
+    data = request.get_json()
+    # Verileri al
+    dt = datetime.strptime(data['date'], '%Y-%m-%d').date()
+    acct_id = int(data['account'])
+    cat_id = int(data['category'])
+    amt = float(data['amount'])
+    desc = data.get('description', '')
+
+    # Yeni işlem oluştur
+    tr = Transaction(date=dt, amount=amt, description=desc,
+                     account_id=acct_id, category_id=cat_id)
+    db.session.add(tr)
+
+    # Hesap bakiyesini güncelle
+    acc = Account.query.get(acct_id)
+    acc.balance += amt
+
+    db.session.commit()
+    return jsonify(success=True, id=tr.id)
+
+@bp.route('/transactions/<int:tr_id>/update_field', methods=['POST'])
+def update_transaction_field(tr_id):
+    data = request.get_json()
+    field = data.get('field')
+    value = data.get('value')
+    tr = Transaction.query.get_or_404(tr_id)
+
+    # Eski tutarı sakla (bakiye düzeltme için)
+    old_amount = tr.amount
+
+    # Alan güncelleme
+    if field == 'amount':
+        tr.amount = float(value)
+    elif field == 'description':
+        tr.description = value
+    elif field == 'date':
+        tr.date = datetime.strptime(value, '%Y-%m-%d').date()
+    elif field == 'account':
+        tr.account_id = int(value)
+    elif field == 'category':
+        tr.category_id = int(value)
+
+    db.session.commit()
+
+    # Tutar değiştiyse hesap bakiyesini düzelt
+    if field == 'amount':
+        acc = Account.query.get(tr.account_id)
+        acc.balance += (tr.amount - old_amount)
+        db.session.commit()
+
+    return jsonify(success=True)
+
+@bp.route('/transactions/<int:tr_id>/delete', methods=['POST'])
+def delete_transaction(tr_id):
+    tr = Transaction.query.get_or_404(tr_id)
+    # Silmeden önce bakiyeyi geri al
+    acc = Account.query.get(tr.account_id)
+    acc.balance -= tr.amount
+
+    db.session.delete(tr)
+    db.session.commit()
+    return redirect(url_for('main.show_transactions'))
+
+@bp.route('/accounts')
+def show_accounts():
+    accounts = Account.query.all()
+    return render_template('accounts.html', accounts=accounts)
 
 @bp.route('/transactions/add', methods=['GET', 'POST'])
 def add_transaction():
+    # Artık inline ekleme olduğu için opsiyonel
     if request.method == 'POST':
-        account_id = int(request.form['account'])
-        category_id = int(request.form['category'])
-        date = datetime.strptime(request.form['date'], '%Y-%m-%d').date()
-        amount = float(request.form['amount'])
-        description = request.form.get('description','')
-        tr = Transaction(date=date, amount=amount, description=description,
+        account_id = request.form.get('account')
+        category_id = request.form.get('category')
+        date_ = datetime.strptime(request.form.get('date'), '%Y-%m-%d').date()
+        amount = float(request.form.get('amount'))
+        description = request.form.get('description')
+        tr = Transaction(date=date_, amount=amount, description=description,
                          account_id=account_id, category_id=category_id)
         db.session.add(tr)
         acc = Account.query.get(account_id)
         acc.balance += amount
         db.session.commit()
         return redirect(url_for('main.show_transactions'))
+
     accounts = Account.query.all()
     categories = Category.query.all()
     return render_template('add_transaction.html', accounts=accounts, categories=categories)
 
-@bp.route('/transactions/<int:tr_id>/edit', methods=['GET', 'POST'])
-def edit_transaction(tr_id):
-    tr = Transaction.query.get_or_404(tr_id)
-    if request.method == 'POST':
-        old_amount = tr.amount
-        tr.date = datetime.strptime(request.form['date'], '%Y-%m-%d').date()
-        tr.amount = float(request.form['amount'])
-        tr.description = request.form.get('description','')
-        new_account_id = int(request.form['account'])
-        if tr.account_id != new_account_id:
-            old_acc = Account.query.get(tr.account_id)
-            old_acc.balance -= old_amount
-            new_acc = Account.query.get(new_account_id)
-            new_acc.balance += tr.amount
-            tr.account_id = new_account_id
-        else:
-            acc = Account.query.get(tr.account_id)
-            acc.balance += tr.amount - old_amount
-        tr.category_id = int(request.form['category'])
-        db.session.commit()
-        return redirect(url_for('main.show_transactions'))
-    accounts = Account.query.all()
-    categories = Category.query.all()
-    return render_template('edit_transaction.html', tr=tr, accounts=accounts, categories=categories)
+@bp.route('/transactions/suggest')
+def suggest_transactions():
+    q = request.args.get('q','').strip()
+    if len(q) < 2:
+        return jsonify([])
+    matches = (Transaction.query
+               .filter(Transaction.description.ilike(f"%{q}%"))
+               .order_by(Transaction.date.desc())
+               .limit(10)
+               .all())
+    result = []
+    for tr in matches:
+        result.append({
+            'id': tr.id,
+            'description': tr.description,
+            'account_id': tr.account_id,
+            'category_id': tr.category_id,
+            'amount': tr.amount
+        })
+    return jsonify(result)
 
-@bp.route('/transactions/<int:tr_id>/delete', methods=['POST'])
-def delete_transaction(tr_id):
-    tr = Transaction.query.get_or_404(tr_id)
-    acc = Account.query.get(tr.account_id)
-    acc.balance -= tr.amount
-    db.session.delete(tr)
-    db.session.commit()
-    return redirect(url_for('main.show_transactions'))
+@bp.route('/dashboard')
+def dashboard():
+    # toplam bakiye, gelir, gider hesapla
+    income = db.session.query(func.sum(Transaction.amount))\
+               .filter(Transaction.amount >= 0).scalar() or 0
+    expense = abs(db.session.query(func.sum(Transaction.amount))\
+               .filter(Transaction.amount < 0).scalar() or 0)
+    balance = income - expense
+
+    # kategori dağılımı
+    data = (db.session.query(Category.name, func.sum(Transaction.amount).label('total'))
+            .join(Transaction)
+            .group_by(Category.id)
+            .all())
+    labels = [row[0] for row in data]
+    values = [abs(row[1]) for row in data]
+
+    return render_template(
+      'dashboard.html',
+      income=income,
+      expense=expense,
+      balance=balance,
+      chart_labels=labels,
+      chart_values=values
+    )
