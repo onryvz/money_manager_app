@@ -30,8 +30,8 @@ def show_transactions():
     if end:
         query = query.filter(Transaction.date <= datetime.strptime(end, '%Y-%m-%d').date())
 
-    # Sonuçları tarih desc. olarak al
-    transactions = query.order_by(Transaction.date.desc()).all()
+    # Sonuçları tarih ve id desc. olarak al
+    transactions = query.order_by(Transaction.date.desc(), Transaction.id.desc()).all()
 
     # Filtre formu için hesap ve kategori listesi
     accounts = Account.query.all()

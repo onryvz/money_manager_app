@@ -4,41 +4,155 @@
 {% block content %}
   <h1 class="mb-3">İşlemler</h1>
 
-  <!-- Filtre Formu -->
-  <form id="filter-form" class="row g-3 mb-3" method="get" action="{{ url_for('main.show_transactions') }}">
-    <div class="col-md-3">
-      <label class="form-label">Hesap</label>
-      <select name="account" id="filter-account" class="form-select auto-submit">
-        <option value="">Tümü</option>
-        {% for acc in accounts %}
-          <option value="{{ acc.id }}" {% if filter.account == acc.id %}selected{% endif %}>{{ acc.name }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div class="col-md-3">
-      <label class="form-label">Kategori</label>
-      <select name="category" id="filter-category" class="form-select auto-submit">
-        <option value="">Tümü</option>
-        {% for cat in categories %}
-          <option value="{{ cat.id }}" {% if filter.category == cat.id %}selected{% endif %}>{{ cat.name }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div class="col-md-2">
-      <label class="form-label">Başlangıç</label>
-      <input type="date" name="start" id="filter-start" class="form-control auto-submit" value="{{ filter.start }}">
-    </div>
-    <div class="col-md-2">
-      <label class="form-label">Bitiş</label>
-      <input type="date" name="end" id="filter-end" class="form-control auto-submit" value="{{ filter.end }}">
-    </div>
-    <div class="col-md-2 d-flex align-items-end">
-      <button type="button" id="clear-filters" class="btn btn-outline-secondary w-100">Temizle</button>
+  <form id="filter-form" class="card p-3 mb-4 shadow-sm" method="get" action="{{ url_for('main.show_transactions') }}">
+    <div class="d-flex flex-wrap align-items-center gap-3">
+      <!-- Her filtre alanı için label + input container -->
+      <div class="filter-group">
+        <label for="filter-account" class="filter-label">Hesap</label>
+        <select name="account" id="filter-account" class="form-select form-select-sm auto-submit filter-input">
+          <option value="">Tümü</option>
+          {% for acc in accounts %}
+            <option value="{{ acc.id }}" {% if filter.account == acc.id %}selected{% endif %}>{{ acc.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label for="filter-category" class="filter-label">Kategori</label>
+        <select name="category" id="filter-category" class="form-select form-select-sm auto-submit filter-input">
+          <option value="">Tümü</option>
+          {% for cat in categories %}
+            <option value="{{ cat.id }}" {% if filter.category == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="filter-start" class="filter-label">Başlangıç</label>
+        <input type="date" name="start" id="filter-start" class="form-control form-control-sm auto-submit filter-input" value="{{ filter.start }}">
+      </div>
+
+      <div class="filter-group">
+        <label for="filter-end" class="filter-label">Bitiş</label>
+        <input type="date" name="end" id="filter-end" class="form-control form-control-sm auto-submit filter-input" value="{{ filter.end }}">
+      </div>
+
+      <div class="ms-auto d-flex gap-2 flex-shrink-0">
+        <button type="button" id="clear-filters" class="btn btn-outline-secondary btn-sm">Temizle</button>
+        <button id="add-row" class="btn btn-success btn-sm" type="button">Yeni Satır Ekle</button>
+        <button id="global-undo-btn" class="btn btn-warning btn-sm" type="button" disabled>Son İşlemi Geri Al</button>
+      </div>
     </div>
   </form>
 
-  <!-- Yeni Satır Ekle -->
-  <button id="add-row" class="btn btn-sm btn-success mb-2">Yeni Satır Ekle</button>
+  <style>
+    /* Apple-style filter form */
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: auto;
+      margin-right: 8px;
+    }
+
+    .filter-label {
+      width: 75px;
+      white-space: nowrap;
+      font-weight: 500;
+      color: #1d1d1f;
+      margin-bottom: 0;
+      text-align: right;
+      font-size: 13px;
+    }
+
+    .filter-input {
+      width: 160px;
+      min-width: unset;
+      height: 30px;
+      padding: 4px 8px;
+      font-size: 13px;
+      border-radius: 6px !important;
+      border-color: #d2d2d7;
+      background-color: #ffffff;
+      transition: all 0.2s ease;
+    }
+
+    .filter-input:hover {
+      border-color: #86b7fe;
+    }
+
+    .filter-input:focus {
+      border-color: #006edc;
+      box-shadow: 0 0 0 3px rgba(0,125,250,0.15);
+    }
+
+    /* Buttons in filter form */
+    #filter-form .btn {
+      padding: 4px 12px;
+      font-size: 13px;
+      font-weight: 500;
+      border-radius: 6px;
+      height: 30px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    #filter-form .btn-success {
+      background-color: #007aff;
+      border-color: #007aff;
+    }
+
+    #filter-form .btn-warning {
+      background-color: #ff9500;
+      border-color: #ff9500;
+    }
+
+    #filter-form .btn-outline-secondary {
+      border-color: #d2d2d7;
+      color: #1d1d1f;
+    }
+
+    #filter-form .btn-outline-secondary:hover {
+      background-color: #f5f5f7;
+      border-color: #d2d2d7;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 900px) {
+      .filter-group {
+        width: 100%;
+        margin-right: 0;
+      }
+
+      .filter-label {
+        width: 85px;
+        text-align: left;
+      }
+
+      .filter-input {
+        width: 100%;
+      }
+
+      #filter-form .d-flex.flex-wrap {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 8px !important;
+      }
+
+      #filter-form .ms-auto {
+        margin-left: 0 !important;
+        margin-top: 12px;
+        justify-content: flex-start !important;
+        gap: 8px !important;
+      }
+
+      #filter-form .btn {
+        flex: 1;
+      }
+    }
+  </style>
 
   <div class="table-responsive">
     <table class="table table-hover align-middle">
@@ -51,6 +165,7 @@
           <th>Açıklama</th>
           <th>İşlem</th>
           <th>Geri Al</th>
+          <th>Sil</th> <!-- Yeni sütun -->
         </tr>
       </thead>
       <tbody>
@@ -93,6 +208,9 @@
           <td></td>
           <td>
             <button class="btn btn-sm btn-outline-secondary undo-btn">⟲</button>
+          </td>
+          <td>
+            <button class="btn btn-sm btn-danger delete-btn">🗑️</button>
           </td>
         </tr>
         {% endfor %}
@@ -181,52 +299,6 @@
         });
       });
 
-      // Yeni satır ekleme
-      document.getElementById('add-row').addEventListener('click', function() {
-        const tbody = document.querySelector('tbody');
-        const tr = document.createElement('tr');
-        tr.classList.add('new-row');
-        tr.innerHTML = `
-          <td><input type="date" class="form-control form-control-sm new-field" data-field="date" value="{{ current_date }}"></td>
-          <td><select class="form-select form-select-sm new-field" data-field="account">
-            {% for acc in accounts %}<option value="{{ acc.id }}">{{ acc.name }}</option>{% endfor %}
-          </select></td>
-          <td><select class="form-select form-select-sm new-field" data-field="category">
-            {% for cat in categories %}<option value="{{ cat.id }}">{{ cat.name }}</option>{% endfor %}
-          </select></td>
-          <td><input type="number" step="0.01" class="form-control form-control-sm new-field text-end" data-field="amount" value="0.00"></td>
-          <td class="position-relative">
-            <input type="text" class="form-control form-control-sm new-field desc-input" data-field="description" autocomplete="off">
-            <ul class="list-group suggestion-list position-absolute w-100 d-none"></ul>
-          </td>
-          <td colspan="2">
-            <button class="btn btn-sm btn-success save-btn">✅ Kaydet</button>
-            <button class="btn btn-sm btn-secondary cancel-btn">❌ İptal</button>
-          </td>`;
-        tbody.prepend(tr);
-
-        // Yeni row için autocomplete ata
-        attachAutocomplete(tr.querySelector('.desc-input'));
-
-        // Kaydet
-        tr.querySelector('.save-btn').addEventListener('click', function() {
-          const data = {};
-          tr.querySelectorAll('.new-field').forEach(el => data[el.dataset.field] = el.value);
-          fetch('/transactions/create', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-          })
-          .then(r => r.json())
-          .then(res => {
-            if (res.success) location.reload();
-            else alert('Oluşturma başarısız');
-          });
-        });
-        // İptal
-        tr.querySelector('.cancel-btn').addEventListener('click', () => tr.remove());
-      });
-
       // Açıklama autocomplete fonksiyonu
       // Açıklama autocomplete fonksiyonu (güncellenmiş)
       function attachAutocomplete(input) {
@@ -295,6 +367,204 @@
       // Mevcut ve yeni satırlara ata
       document.querySelectorAll('.desc-input').forEach(inp => attachAutocomplete(inp));
       // Yeni satır ekleme kodunda da attachAutocomplete çağrısı zaten var
+
+      // Global undo değişkeni
+      let lastAction = null;
+      const undoBtn = document.getElementById('global-undo-btn');
+
+      // localStorage'tan son işlemi yükle
+      function loadLastAction() {
+        try {
+          const data = localStorage.getItem('lastAction');
+          if (data) {
+            lastAction = JSON.parse(data);
+            setUndoActive(true);
+          } else {
+            lastAction = null;
+            setUndoActive(false);
+          }
+        } catch {
+          lastAction = null;
+          setUndoActive(false);
+        }
+      }
+
+      // localStorage'a son işlemi kaydet
+      function saveLastAction() {
+        if (lastAction) {
+          localStorage.setItem('lastAction', JSON.stringify(lastAction));
+          setUndoActive(true);
+        } else {
+          localStorage.removeItem('lastAction');
+          setUndoActive(false);
+        }
+      }
+
+      function setUndoActive(active) {
+        if (active) {
+          undoBtn.disabled = false;
+          undoBtn.classList.remove('btn-secondary');
+          undoBtn.classList.add('btn-warning');
+        } else {
+          undoBtn.disabled = true;
+          undoBtn.classList.remove('btn-warning');
+          undoBtn.classList.add('btn-secondary');
+        }
+      }
+
+      loadLastAction();
+
+      // Inline edit
+      document.querySelectorAll('.field').forEach(el => {
+        el.addEventListener('change', function() {
+          const tr = this.closest('tr');
+          const id = tr.dataset.id;
+          const field = this.dataset.field;
+          const oldValue = tr.getAttribute('data-old-' + field) || this.defaultValue;
+          const newValue = this.value;
+          // Validation
+          if (field === 'amount' && isNaN(parseFloat(newValue))) {
+            alert('Tutar geçerli bir sayı olmalı!');
+            this.value = oldValue;
+            return;
+          }
+          if (field === 'date' && !/^\d{4}-\d{2}-\d{2}$/.test(newValue)) {
+            alert('Tarih formatı YYYY-MM-DD olmalı!');
+            this.value = oldValue;
+            return;
+          }
+          fetch(`/transactions/${id}/update_field`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ field: field, value: newValue })
+          })
+          .then(r => r.json())
+          .then(data => {
+            if (!data.success) {
+              alert('Güncelleme başarısız');
+              this.value = oldValue;
+            } else {
+              lastAction = {
+                type: 'update',
+                id,
+                field,
+                oldValue,
+                newValue
+              };
+              saveLastAction();
+              this.classList.add('is-valid');
+              setTimeout(() => this.classList.remove('is-valid'), 1000);
+            }
+          });
+        });
+      });
+
+      // Silme butonu
+      document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          if (!confirm('Bu işlemi silmek istediğinize emin misiniz?')) return;
+          const tr = this.closest('tr');
+          const id = tr.dataset.id;
+          const rowData = {};
+          tr.querySelectorAll('.field').forEach(el => {
+            rowData[el.dataset.field] = el.value;
+          });
+          lastAction = {
+            type: 'delete',
+            id,
+            data: rowData
+          };
+          saveLastAction();
+          fetch(`/transactions/${id}/delete`, { method: 'POST' }).then(() => tr.remove());
+        });
+      });
+
+      // Yeni satır ekleme
+      document.getElementById('add-row').addEventListener('click', function() {
+        const tbody = document.querySelector('tbody');
+        const tr = document.createElement('tr');
+        tr.classList.add('new-row');
+        tr.innerHTML = `
+          <td><input type="date" class="form-control form-control-sm new-field" data-field="date" value="{{ current_date }}"></td>
+          <td><select class="form-select form-select-sm new-field" data-field="account">
+            {% for acc in accounts %}<option value="{{ acc.id }}">{{ acc.name }}</option>{% endfor %}
+          </select></td>
+          <td><select class="form-select form-select-sm new-field" data-field="category">
+            {% for cat in categories %}<option value="{{ cat.id }}">{{ cat.name }}</option>{% endfor %}
+          </select></td>
+          <td><input type="number" step="0.01" class="form-control form-control-sm new-field text-end" data-field="amount" value="0.00"></td>
+          <td class="position-relative">
+            <input type="text" class="form-control form-control-sm new-field desc-input" data-field="description" autocomplete="off">
+            <ul class="list-group suggestion-list position-absolute w-100 d-none"></ul>
+          </td>
+          <td colspan="2">
+            <button class="btn btn-sm btn-success save-btn">✅ Kaydet</button>
+            <button class="btn btn-sm btn-secondary cancel-btn">❌ İptal</button>
+          </td>`;
+        tbody.prepend(tr);
+
+        // Yeni row için autocomplete ata
+        attachAutocomplete(tr.querySelector('.desc-input'));
+
+        // Kaydet
+        tr.querySelector('.save-btn').addEventListener('click', function() {
+          const data = {};
+          tr.querySelectorAll('.new-field').forEach(el => data[el.dataset.field] = el.value);
+          fetch('/transactions/create', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          })
+          .then(r => r.json())
+          .then(res => {
+            if (res.success) {
+              lastAction = {
+                type: 'create',
+                id: res.id
+              };
+              saveLastAction();
+              tr.remove();
+              location.reload();
+            } else alert('Oluşturma başarısız');
+          });
+        });
+        // İptal
+        tr.querySelector('.cancel-btn').addEventListener('click', () => tr.remove());
+      });
+
+      // Global Undo Butonu
+      undoBtn.addEventListener('click', function() {
+        if (!lastAction) return;
+        if (lastAction.type === 'update') {
+          fetch(`/transactions/${lastAction.id}/update_field`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ field: lastAction.field, value: lastAction.oldValue })
+          }).then(() => {
+            lastAction = null;
+            saveLastAction();
+            location.reload();
+          });
+        } else if (lastAction.type === 'delete') {
+          fetch('/transactions/create', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(lastAction.data)
+          }).then(() => {
+            lastAction = null;
+            saveLastAction();
+            location.reload();
+          });
+        } else if (lastAction.type === 'create') {
+          fetch(`/transactions/${lastAction.id}/delete`, {
+            method: 'POST'
+          }).then(() => {
+            lastAction = null;
+            saveLastAction();
+            location.reload();
+          });
+        }
+      });
 
     });
   </script>
