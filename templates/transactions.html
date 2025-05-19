@@ -4,9 +4,8 @@
 {% block content %}
   <h1 class="mb-3">İşlemler</h1>
 
-  <form id="filter-form" class="card p-3 mb-4 shadow-sm" method="get" action="{{ url_for('main.show_transactions') }}">
-    <div class="d-flex flex-wrap align-items-center gap-3">
-      <!-- Her filtre alanı için label + input container -->
+  <form id="filter-form" method="get" action="{{ url_for('main.show_transactions') }}">
+    <div class="filter-form-content">
       <div class="filter-group">
         <label for="filter-account" class="filter-label">Hesap</label>
         <select name="account" id="filter-account" class="form-select form-select-sm auto-submit filter-input">
@@ -37,7 +36,7 @@
         <input type="date" name="end" id="filter-end" class="form-control form-control-sm auto-submit filter-input" value="{{ filter.end }}">
       </div>
 
-      <div class="ms-auto d-flex gap-2 flex-shrink-0">
+      <div class="filter-buttons">
         <button type="button" id="clear-filters" class="btn btn-outline-secondary btn-sm">Temizle</button>
         <button id="add-row" class="btn btn-success btn-sm" type="button">Yeni Satır Ekle</button>
         <button id="global-undo-btn" class="btn btn-warning btn-sm" type="button" disabled>Son İşlemi Geri Al</button>
@@ -45,68 +44,72 @@
     </div>
   </form>
 
-  <div class="table-responsive">
-    <table class="table table-hover align-middle">
-      <thead class="table-light">
-        <tr>
-          <th>Tarih</th>
-          <th>Hesap</th>
-          <th>Kategori</th>
-          <th class="text-end">Tutar</th>
-          <th>Açıklama</th>
-          <th>İşlem</th>
-          <th>Geri Al</th>
-          <th>Sil</th> <!-- Yeni sütun -->
-        </tr>
-      </thead>
-      <tbody>
-        {% for tr in transactions %}
-        <tr data-id="{{ tr.id }}">
-          <td>
-            <input type="date"
-                   class="form-control form-control-sm field"
-                   data-field="date"
-                   value="{{ tr.date }}">
-          </td>
-          <td>
-            <select class="form-select form-select-sm field" data-field="account">
-              {% for acc in accounts %}
-                <option value="{{ acc.id }}" {% if tr.account_id == acc.id %}selected{% endif %}>{{ acc.name }}</option>
-              {% endfor %}
-            </select>
-          </td>
-          <td>
-            <select class="form-select form-select-sm field" data-field="category">
-              {% for cat in categories %}
-                <option value="{{ cat.id }}" {% if tr.category_id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
-              {% endfor %}
-            </select>
-          </td>
-          <td>
-            <input type="number" step="0.01"
-                   class="form-control form-control-sm field text-end"
-                   data-field="amount"
-                   value="{{ '%.2f'|format(tr.amount) }}">
-          </td>
-          <td class="position-relative">
-            <input type="text"
-                   class="form-control form-control-sm field desc-input"
-                   data-field="description"
-                   autocomplete="off"
-                   value="{{ tr.description }}">
-            <ul class="list-group suggestion-list position-absolute w-100 d-none"></ul>
-          </td>
-          <td></td>
-          <td>
-            <button class="btn btn-sm btn-outline-secondary undo-btn">⟲</button>
-          </td>
-          <td>
-            <button class="btn btn-sm btn-danger delete-btn">🗑️</button>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+  <div class="table-container">
+    <div class="table-responsive">
+      <table class="table align-middle">
+        <thead>
+          <tr>
+            <th>Tarih</th>
+            <th>Hesap</th>
+            <th>Kategori</th>
+            <th class="text-end">Tutar</th>
+            <th>Açıklama</th>
+            <th>İşlem</th>
+            <th>Sil</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for tr in transactions %}
+          <tr data-id="{{ tr.id }}">
+            <td>
+              <input type="date"
+                     class="form-control form-control-sm field"
+                     data-field="date"
+                     value="{{ tr.date }}">
+            </td>
+            <td>
+              <select class="form-select form-select-sm field" data-field="account">
+                {% for acc in accounts %}
+                  <option value="{{ acc.id }}" {% if tr.account_id == acc.id %}selected{% endif %}>{{ acc.name }}</option>
+                {% endfor %}
+              </select>
+            </td>
+            <td>
+              <select class="form-select form-select-sm field" data-field="category">
+                {% for cat in categories %}
+                  <option value="{{ cat.id }}" {% if tr.category_id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+                {% endfor %}
+              </select>
+            </td>
+            <td>
+              <input type="number" step="0.01"
+                     class="form-control form-control-sm field text-end"
+                     data-field="amount"
+                     value="{{ '%.2f'|format(tr.amount) }}">
+            </td>
+            <td class="position-relative">
+              <input type="text"
+                     class="form-control form-control-sm field desc-input"
+                     data-field="description"
+                     autocomplete="off"
+                     value="{{ tr.description }}">
+              <div class="suggestion-list d-none">
+                <!-- Suggestions will be dynamically added here with all necessary data attributes -->
+              </div>
+            </td>
+            <td></td>
+            <td>
+              <button class="btn btn-sm btn-danger delete-btn" title="Sil">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M2 4h12M5.333 4V2.667a1.333 1.333 0 011.334-1.334h2.666a1.333 1.333 0 011.334 1.334V4m2 0v9.333a1.333 1.333 0 01-1.334 1.334H4.667a1.333 1.333 0 01-1.334-1.334V4h9.334z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
 {% endblock %}
 
@@ -139,56 +142,74 @@
           originalData[id][el.dataset.field] = el.value;
         });
       });
+      // Alan değişikliği dinleyicisi
       document.querySelectorAll('.field').forEach(el => {
         el.addEventListener('change', function() {
           const tr = this.closest('tr');
           const id = tr.dataset.id;
           const field = this.dataset.field;
           const value = this.value;
-          // Validation
-          if (field === 'amount' && isNaN(parseFloat(value))) {
-            alert('Tutar geçerli bir sayı olmalı!');
-            this.value = originalData[id][field];
-            return;
-          }
-          if (field === 'date' && !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-            alert('Tarih formatı YYYY-MM-DD olmalı!');
-            this.value = originalData[id][field];
-            return;
-          }
+
+          // Değişiklik yapmadan önceki orijinal değerleri sakla
+          const originalState = { ...originalData[id] };
+
           fetch(`/transactions/${id}/update_field`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ field: field, value: value })
+            body: JSON.stringify({ 
+              field: field, 
+              value: value,
+              oldData: originalState  // Orijinal durumu gönder
+            })
           })
           .then(r => r.json())
           .then(data => {
             if (!data.success) {
-              alert('Güncelleme başarısız');
+              alert('Güncelleme başarısız: ' + (data.error || ''));
               this.value = originalData[id][field];
             } else {
+              // Başarılı güncelleme - lastAction'ı güncelle
+              lastAction = {
+                type: 'update',
+                id: id,
+                old_data: originalState  // Orijinal durumu sakla
+              };
+              saveLastAction();
+              
+              // Başarılı güncelleme sonrası originalData'yı güncelle
+              originalData[id][field] = value;
+              
               this.classList.add('is-valid');
               setTimeout(() => this.classList.remove('is-valid'), 1000);
+
+              // Debug için konsola yaz
+              console.log('Değişiklik öncesi değerler:', originalState);
+              console.log('Güncel lastAction:', lastAction);
             }
+          })
+          .catch(error => {
+            console.error('Hata:', error);
+            alert('İşlem sırasında bir hata oluştu');
+            this.value = originalData[id][field];
           });
         });
       });
-      document.querySelectorAll('.undo-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-          const tr = this.closest('tr');
-          const id = tr.dataset.id;
-          Object.entries(originalData[id]).forEach(([field, val]) => {
-            const el = tr.querySelector(`[data-field="${field}"]`);
-            if (!el) return;
-            el.value = val;
-            fetch(`/transactions/${id}/update_field`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ field: field, value: val })
-            });
-          });
-        });
-      });
+      // document.querySelectorAll('.undo-btn').forEach(btn => {
+      //   btn.addEventListener('click', function() {
+      //     const tr = this.closest('tr');
+      //     const id = tr.dataset.id;
+      //     Object.entries(originalData[id]).forEach(([field, val]) => {
+      //       const el = tr.querySelector(`[data-field="${field}"]`);
+      //       if (!el) return;
+      //       el.value = val;
+      //       fetch(`/transactions/${id}/update_field`, {
+      //         method: 'POST',
+      //         headers: { 'Content-Type': 'application/json' },
+      //         body: JSON.stringify({ field: field, value: val })
+      //       });
+      //     });
+      //   });
+      // });
 
       // Açıklama autocomplete fonksiyonu
       // Açıklama autocomplete fonksiyonu (güncellenmiş)
@@ -200,50 +221,79 @@
           const q = this.value.trim();
           if (q.length < 2) {
             ul.classList.add('d-none');
+            ul.innerHTML = '';
             return;
           }
+          
           debounceTimer = setTimeout(() => {
             fetch(`/transactions/suggest?q=${encodeURIComponent(q)}`)
-              .then(res => res.json())
-              .then(list => {
-                const uniq = [];
-                const seen = new Set();
-                list.forEach(item => {
-                  const key = `${item.description}||${item.account_id}||${item.category_id}`;
-                  if (!seen.has(key)) {
-                    seen.add(key);
-                    uniq.push(item);
-                  }
+                .then(res => res.json())
+                .then(list => {
+                    ul.innerHTML = '';
+                    const uniq = [];
+                    const seen = new Set();
+                    
+                    list.forEach(item => {
+                        const key = `${item.description}||${item.account_id}||${item.category_id}`;
+                        if (!seen.has(key)) {
+                            seen.add(key);
+                            uniq.push(item);
+                        }
+                    });
+
+                    if (uniq.length === 0) {
+                        ul.classList.add('d-none');
+                        return;
+                    }
+
+                    uniq.forEach(item => {
+                        const li = document.createElement('div');
+                        li.className = 'list-group-item';
+                        li.textContent = item.description;
+                        li.dataset.account = item.account_id;
+                        li.dataset.category = item.category_id;
+                        li.dataset.amount = item.amount;
+                        ul.appendChild(li);
+                    });
+                    
+                    ul.classList.remove('d-none');
                 });
-                ul.innerHTML = '';
-                if (uniq.length === 0) {
-                  ul.classList.add('d-none');
-                  return;
-                }
-                uniq.forEach(item => {
-                  const li = document.createElement('li');
-                  li.className = 'list-group-item list-group-item-action py-1';
-                  li.textContent = item.description;
-                  li.dataset.account = item.account_id;
-                  li.dataset.category = item.category_id;
-                  li.dataset.amount = item.amount;
-                  ul.appendChild(li);
-                });
-                ul.classList.remove('d-none');
-              });
-          }, 300);
-        });
+        }, 300);
+    });
 
         ul.addEventListener('click', function(e) {
-          if (e.target.tagName !== 'LI') return;
-          const li = e.target;
-          input.value = li.textContent;
-          ul.classList.add('d-none');
+          const item = e.target.closest('.list-group-item');
+          if (!item) return;
+
           const tr = input.closest('tr');
-          tr.querySelector('select[data-field=\"account\"]').value = li.dataset.account;
-          tr.querySelector('select[data-field=\"category\"]').value = li.dataset.category;
-          tr.querySelector('input[data-field=\"amount\"]').value = parseFloat(li.dataset.amount).toFixed(2);
-        });
+          if (!tr) return;
+
+          // Form alanlarını güncelle
+          input.value = item.textContent;
+          
+          const accountSelect = tr.querySelector('[data-field="account"]');
+          const categorySelect = tr.querySelector('[data-field="category"]');
+          const amountInput = tr.querySelector('[data-field="amount"]');
+
+          if (accountSelect) {
+              accountSelect.value = item.dataset.account;
+              accountSelect.dispatchEvent(new Event('change'));
+          }
+
+          if (categorySelect) {
+              categorySelect.value = item.dataset.category;
+              categorySelect.dispatchEvent(new Event('change'));
+          }
+
+          if (amountInput) {
+              amountInput.value = Number(item.dataset.amount).toFixed(2);
+              amountInput.dispatchEvent(new Event('change'));
+          }
+
+          // Öneri listesini gizle
+          ul.classList.add('d-none');
+          ul.innerHTML = '';
+      });
 
         input.addEventListener('blur', () => {
           setTimeout(() => ul.classList.add('d-none'), 200);
@@ -304,51 +354,6 @@
       }
 
       loadLastAction();
-
-      // Inline edit
-      document.querySelectorAll('.field').forEach(el => {
-        el.addEventListener('change', function() {
-          const tr = this.closest('tr');
-          const id = tr.dataset.id;
-          const field = this.dataset.field;
-          const oldValue = tr.getAttribute('data-old-' + field) || this.defaultValue;
-          const newValue = this.value;
-          // Validation
-          if (field === 'amount' && isNaN(parseFloat(newValue))) {
-            alert('Tutar geçerli bir sayı olmalı!');
-            this.value = oldValue;
-            return;
-          }
-          if (field === 'date' && !/^\d{4}-\d{2}-\d{2}$/.test(newValue)) {
-            alert('Tarih formatı YYYY-MM-DD olmalı!');
-            this.value = oldValue;
-            return;
-          }
-          fetch(`/transactions/${id}/update_field`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ field: field, value: newValue })
-          })
-          .then(r => r.json())
-          .then(data => {
-            if (!data.success) {
-              alert('Güncelleme başarısız');
-              this.value = oldValue;
-            } else {
-              lastAction = {
-                type: 'update',
-                id,
-                field,
-                oldValue,
-                newValue
-              };
-              saveLastAction();
-              this.classList.add('is-valid');
-              setTimeout(() => this.classList.remove('is-valid'), 1000);
-            }
-          });
-        });
-      });
 
       // Silme butonu
       document.querySelectorAll('.delete-btn').forEach(btn => {
@@ -426,34 +431,60 @@
       // Global Undo Butonu
       undoBtn.addEventListener('click', function() {
         if (!lastAction) return;
+        
+        this.disabled = true;
+
         if (lastAction.type === 'update') {
-          fetch(`/transactions/${lastAction.id}/update_field`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ field: lastAction.field, value: lastAction.oldValue })
-          }).then(() => {
-            lastAction = null;
-            saveLastAction();
-            location.reload();
-          });
-        } else if (lastAction.type === 'delete') {
           fetch('/transactions/create', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(lastAction.data)
-          }).then(() => {
-            lastAction = null;
-            saveLastAction();
-            location.reload();
+            body: JSON.stringify({
+              type: 'update',
+              id: lastAction.id,
+              oldData: lastAction.old_data  // Saklanan eski değerler
+            })
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              lastAction = null;
+              saveLastAction();
+              location.reload();
+            } else {
+              alert('Geri alma işlemi başarısız: ' + (data.error || 'Bilinmeyen hata'));
+              this.disabled = false;
+            }
           });
+        } else if (lastAction.type === 'delete') {
+            fetch('/transactions/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(lastAction.data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    lastAction = null;
+                    saveLastAction();
+                    location.reload();
+                } else {
+                    alert('Geri alma işlemi başarısız: ' + data.error);
+                }
+            });
         } else if (lastAction.type === 'create') {
-          fetch(`/transactions/${lastAction.id}/delete`, {
-            method: 'POST'
-          }).then(() => {
-            lastAction = null;
-            saveLastAction();
-            location.reload();
-          });
+            fetch(`/transactions/${lastAction.id}/delete`, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    lastAction = null;
+                    saveLastAction();
+                    location.reload();
+                } else {
+                    alert('Geri alma işlemi başarısız: ' + data.error);
+                }
+            });
         }
       });
 

@@ -5,6 +5,9 @@ from sqlalchemy import func
 
 bp = Blueprint('main', __name__)
 
+# En üstte, diğer importlardan sonra global değişkeni tanımlayalım
+lastAction = None
+
 @bp.route('/')
 def index():
     return redirect(url_for('main.show_transactions'))
@@ -51,70 +54,169 @@ def show_transactions():
         current_date=date.today().isoformat()
     )
 
-@bp.route('/transactions/create', methods=['POST'])
-def create_transaction():
-    data = request.get_json()
-    # Verileri al
-    dt = datetime.strptime(data['date'], '%Y-%m-%d').date()
-    acct_id = int(data['account'])
-    cat_id = int(data['category'])
-    amt = float(data['amount'])
-    desc = data.get('description', '')
-
-    # Yeni işlem oluştur
-    tr = Transaction(date=dt, amount=amt, description=desc,
-                     account_id=acct_id, category_id=cat_id)
-    db.session.add(tr)
-
-    # Hesap bakiyesini güncelle
-    acc = Account.query.get(acct_id)
-    acc.balance += amt
-
-    db.session.commit()
-    return jsonify(success=True, id=tr.id)
-
 @bp.route('/transactions/<int:tr_id>/update_field', methods=['POST'])
 def update_transaction_field(tr_id):
+    global lastAction
     data = request.get_json()
     field = data.get('field')
     value = data.get('value')
+    
+    if value is None:
+        return jsonify(success=False, error="Value cannot be None")
+        
     tr = Transaction.query.get_or_404(tr_id)
 
-    # Eski tutarı sakla (bakiye düzeltme için)
-    old_amount = tr.amount
+    # Değişiklik öncesi tüm değerleri sakla
+    old_data = {
+        'date': tr.date.isoformat(),
+        'amount': float(tr.amount),
+        'description': tr.description,
+        'account': tr.account_id,
+        'category': tr.category_id
+    }
 
-    # Alan güncelleme
-    if field == 'amount':
-        tr.amount = float(value)
-    elif field == 'description':
-        tr.description = value
-    elif field == 'date':
-        tr.date = datetime.strptime(value, '%Y-%m-%d').date()
-    elif field == 'account':
-        tr.account_id = int(value)
-    elif field == 'category':
-        tr.category_id = int(value)
+    try:
+        # Alan güncelleme
+        if field == 'amount':
+            old_amount = tr.amount
+            tr.amount = float(value)
+            acc = Account.query.get(tr.account_id)
+            acc.balance = acc.balance - old_amount + float(value)
+        elif field == 'account':
+            old_account_id = tr.account_id
+            new_account_id = int(value)
+            if new_account_id != old_account_id:
+                old_acc = Account.query.get(old_account_id)
+                new_acc = Account.query.get(new_account_id)
+                old_acc.balance -= tr.amount
+                new_acc.balance += tr.amount
+                tr.account_id = new_account_id
+        elif field == 'category':
+            tr.category_id = int(value)
+        elif field == 'description':
+            tr.description = value
+        elif field == 'date':
+            tr.date = datetime.strptime(value, '%Y-%m-%d').date()
 
-    db.session.commit()
+        # Son işlemi sakla
+        lastAction = {
+            'type': 'update',
+            'id': tr_id,
+            'old_data': old_data
+        }
 
-    # Tutar değiştiyse hesap bakiyesini düzelt
-    if field == 'amount':
-        acc = Account.query.get(tr.account_id)
-        acc.balance += (tr.amount - old_amount)
         db.session.commit()
-
-    return jsonify(success=True)
+        return jsonify(success=True)
+    except Exception as e:
+        db.session.rollback()
+        return jsonify(success=False, error=str(e))
 
 @bp.route('/transactions/<int:tr_id>/delete', methods=['POST'])
 def delete_transaction(tr_id):
+    global lastAction
     tr = Transaction.query.get_or_404(tr_id)
-    # Silmeden önce bakiyeyi geri al
+    
+    # Son işlemi sakla
+    lastAction = {
+        'type': 'delete',
+        'data': {
+            'date': tr.date.isoformat(),
+            'amount': tr.amount,
+            'description': tr.description,
+            'account': tr.account_id,
+            'category': tr.category_id
+        }
+    }
+    
+    # Hesap bakiyesini güncelle
     acc = Account.query.get(tr.account_id)
     acc.balance -= tr.amount
-
+    
     db.session.delete(tr)
     db.session.commit()
-    return redirect(url_for('main.show_transactions'))
+    return jsonify(success=True)
+
+@bp.route('/transactions/create', methods=['POST'])
+def create_transaction():
+    global lastAction
+    data = request.get_json()
+
+    # Geri alma işlemi kontrolü
+    if data.get('type') == 'update':
+        try:
+            tr = Transaction.query.get(int(data['id']))
+            if not tr:
+                return jsonify(success=False, error="Transaction not found")
+
+            old_data = data['oldData']
+            
+            # Önce hesap bakiyelerini güncelle
+            if tr.account_id != int(old_data['account']):
+                current_acc = Account.query.get(tr.account_id)
+                target_acc = Account.query.get(int(old_data['account']))
+                
+                if current_acc:
+                    current_acc.balance -= tr.amount
+                if target_acc:
+                    target_acc.balance += float(old_data['amount'])
+            
+            elif tr.amount != float(old_data['amount']):
+                acc = Account.query.get(tr.account_id)
+                if acc:
+                    acc.balance = acc.balance - tr.amount + float(old_data['amount'])
+
+            # Tüm alanları eski değerlerine döndür
+            tr.date = datetime.strptime(old_data['date'], '%Y-%m-%d').date()
+            tr.amount = float(old_data['amount'])
+            tr.description = old_data['description']
+            tr.account_id = int(old_data['account'])
+            tr.category_id = int(old_data['category'])
+
+            db.session.commit()
+            lastAction = None
+            return jsonify(success=True)
+
+        except Exception as e:
+            db.session.rollback()
+            print(f"Hata: {str(e)}")  # Debug için
+            return jsonify(success=False, error=str(e))
+
+    # Normal işlem oluşturma
+    try:
+        tr = Transaction(
+            date=datetime.strptime(data['date'], '%Y-%m-%d').date(),
+            amount=float(data['amount']),
+            description=data.get('description', ''),
+            account_id=int(data['account']),
+            category_id=int(data['category'])
+        )
+        db.session.add(tr)
+        
+        # Hesap bakiyesini güncelle
+        acc = Account.query.get(tr.account_id)
+        if acc:
+            acc.balance += tr.amount
+        
+        db.session.commit()
+        
+        # Yeni işlem için lastAction'ı güncelle
+        lastAction = {
+            'type': 'create',
+            'id': tr.id,
+            'data': {
+                'date': tr.date.isoformat(),
+                'amount': tr.amount,
+                'description': tr.description,
+                'account': tr.account_id,
+                'category': tr.category_id
+            }
+        }
+        
+        return jsonify(success=True, id=tr.id)
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify(success=False, error=str(e))
 
 @bp.route('/accounts')
 def show_accounts():

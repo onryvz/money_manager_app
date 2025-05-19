@@ -1,69 +1,157 @@
-/* Base variables */
+/* Core Colors */
 :root {
-  --bs-card-border-radius: 20px;
-  --bs-btn-border-radius: 12px;
-  --bs-card-box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  --bs-input-border-radius: 12px;
-  --bs-primary: #007aff;
-  --bs-secondary: #8e8e93;
-  --apple-text-primary: #1d1d1f;
-  --apple-border-color: #d2d2d7;
-  --apple-bg-hover: #f5f5f7;
-  --apple-focus-shadow: 0 0 0 3px rgba(0,125,250,0.15);
+  --apple-blue: #007AFF;
+  --apple-red: #FF3B30;
+  --apple-green: #34C759;
+  --apple-orange: #FF9500;
+  --apple-purple: #AF52DE;
+
+  /* System Colors */
+  --apple-text-primary: #1D1D1F;
+  --apple-text-secondary: #86868B;
+  --apple-border: #D2D2D7;
+  --apple-bg-primary: #FFFFFF;
+  --apple-bg-secondary: #F5F5F7;
+  --apple-bg-tertiary: #FBFBFD;
+
+  /* Spacing */
+  --apple-spacing-xs: 4px;
+  --apple-spacing-sm: 8px;
+  --apple-spacing-md: 16px;
+  --apple-spacing-lg: 24px;
+  --apple-spacing-xl: 32px;
+
+  /* Radius */
+  --apple-radius-sm: 6px;
+  --apple-radius-md: 8px;
+  --apple-radius-lg: 12px;
+  --apple-radius-xl: 16px;
+
+  /* Shadows */
+  --apple-shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --apple-shadow-md: 0 2px 4px rgba(0,0,0,0.05);
+  --apple-shadow-lg: 0 4px 6px rgba(0,0,0,0.05);
+
+  /* Navigation */
+  --navbar-height: 64px;
+
+  /* Navbar için ek değişkenler */
+  --navbar-blur: 20px;
+  --navbar-bg: rgba(255, 255, 255, 0.95);
 }
 
-/* Common components */
+/* Base Styles */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+  background-color: var(--apple-bg-tertiary);
+  color: var(--apple-text-primary);
+  line-height: 1.47059;
+  font-weight: 400;
+  letter-spacing: -0.022em;
+  margin: 0;
+  padding-top: var(--navbar-height);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Card */
 .card {
-  border-radius: var(--bs-card-border-radius) !important;
-  box-shadow: var(--bs-card-box-shadow) !important;
-  border: none !important;
+  background: var(--apple-bg-primary);
+  border-radius: var(--apple-radius-lg);
+  border: none;
+  box-shadow: var(--apple-shadow-md);
+  transition: box-shadow 0.2s ease;
 }
 
+.card:hover {
+  box-shadow: var(--apple-shadow-lg);
+}
+
+/* Buttons */
 .btn {
-  border-radius: var(--bs-btn-border-radius) !important;
+  padding: 8px 16px;
+  border-radius: var(--apple-radius-md);
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
 }
 
 .btn-primary {
-  background-color: var(--bs-primary) !important;
-  border-color: var(--bs-primary) !important;
+  background: var(--apple-blue);
+  border-color: var(--apple-blue);
 }
 
-.btn-secondary {
-  background-color: var(--bs-secondary) !important;
-  border-color: var(--bs-secondary) !important;
+.btn-success {
+  background: var(--apple-green);
+  border-color: var(--apple-green);
 }
 
+.btn-warning {
+  background: var(--apple-orange);
+  border-color: var(--apple-orange);
+  color: white;
+}
+
+.btn-danger {
+  background: var(--apple-red);
+  border-color: var(--apple-red);
+}
+
+/* Forms */
 .form-control,
 .form-select {
-  border-radius: var(--bs-input-border-radius) !important;
-  border: 1px solid var(--apple-border-color);
-  padding: 10px 12px;
+  border-radius: var(--apple-radius-md);
+  border: 1px solid var(--apple-border);
+  padding: 8px 12px;
+  font-size: 14px;
+  transition: all 0.2s ease;
 }
 
-/* Table styles */
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--apple-blue);
+  box-shadow: 0 0 0 3px rgba(0,122,255,0.1);
+}
+
+/* Tables */
 .table {
-  background-color: #ffffff;
-  border-radius: var(--bs-card-border-radius);
-  overflow: hidden;
+  --bs-table-hover-bg: var(--apple-bg-secondary);
+  margin-bottom: 0;
 }
 
 .table thead {
-  background-color: var(--apple-bg-hover);
+  background: var(--apple-bg-secondary);
+  border-bottom: 1px solid var(--apple-border);
 }
 
-/* Navigation */
-.navbar {
-  font-size: 17px;
+.table th {
+  font-weight: 600;
+  color: var(--apple-text-secondary);
+  padding: var(--apple-spacing-sm) var(--apple-spacing-md);
+}
+
+.table td {
+  padding: var(--apple-spacing-sm) var(--apple-spacing-md);
+  vertical-align: middle;
 }
 
 /* Typography */
-h1, h4 {
+h1 {
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+h4 {
+  font-size: 20px;
   font-weight: 600;
-  color: var(--apple-text-primary);
+  letter-spacing: -0.02em;
 }
 
 /* Import other modules */
 @import 'modules/filters.css';
+@import 'modules/tables.css';
 @import 'modules/suggestions.css';
 
 /* suggestion-list’in taşan kısmını göstermeye zorla */
@@ -89,4 +177,57 @@ h1, h4 {
   border: none !important;
   box-shadow: none !important;
   padding: 0 !important;
+}
+
+/* Navbar styles - mevcut yapıyı koruyarak modernize ediyoruz */
+.navbar {
+  background: var(--navbar-bg);
+  backdrop-filter: blur(var(--navbar-blur));
+  -webkit-backdrop-filter: blur(var(--navbar-blur));
+  border-bottom: 1px solid var(--apple-border);
+  padding-top: var(--apple-spacing-sm);
+  padding-bottom: var(--apple-spacing-sm);
+}
+
+.navbar-brand {
+  color: var(--apple-blue);
+  font-weight: 600;
+  font-size: 20px;
+  letter-spacing: -0.01em;
+  padding: 0;
+}
+
+.nav-link {
+  color: var(--apple-text-primary);
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: var(--apple-radius-md);
+  transition: all 0.2s ease;
+}
+
+.nav-link:hover {
+  background: var(--apple-bg-secondary);
+  color: var(--apple-text-primary);
+}
+
+.nav-link.active {
+  background: var(--apple-bg-secondary);
+  color: var(--apple-blue);
+}
+
+/* Navbar içindeki butonlar için özel stil */
+.navbar .btn-primary {
+  font-size: 14px;
+  padding: 6px 14px;
+  border-radius: var(--apple-radius-md);
+}
+
+.navbar-toggler {
+  border: none;
+  padding: var(--apple-spacing-xs);
+}
+
+.navbar-toggler:focus {
+  box-shadow: none;
 }

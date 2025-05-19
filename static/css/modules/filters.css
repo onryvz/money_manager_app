@@ -1,106 +1,95 @@
-/* Filter form styles */
+/* Filter Form Container */
+#filter-form {
+  background: var(--apple-bg-primary);
+  border-radius: var(--apple-radius-lg);
+  border: none;
+  box-shadow: var(--apple-shadow-md);
+  transition: box-shadow 0.2s ease;
+  margin-bottom: var(--apple-spacing-lg);
+}
+
+#filter-form:hover {
+  box-shadow: var(--apple-shadow-lg);
+}
+
+/* Filter Groups */
 .filter-group {
   display: flex;
   align-items: center;
-  gap: 12px;
-  min-width: auto;
-  margin-right: 8px;
+  gap: var(--apple-spacing-sm);
+  min-width: 220px;
 }
 
+/* Filter Labels */
 .filter-label {
-  width: 75px;
+  width: 80px;
   white-space: nowrap;
   font-weight: 500;
+  font-size: 13px;
   color: var(--apple-text-primary);
   margin-bottom: 0;
   text-align: right;
-  font-size: 13px;
 }
 
+/* Filter Inputs */
 .filter-input {
-  width: 160px;
-  min-width: unset;
-  height: 30px;
-  padding: 4px 8px;
+  flex: 1;
+  min-width: 140px;
+  max-width: 200px;
+  height: 32px;
+  padding: 4px 12px;
   font-size: 13px;
-  border-radius: 6px !important;
-  border-color: var(--apple-border-color);
-  background-color: #ffffff;
+  border-radius: var(--apple-radius-md);
+  border: 1px solid var(--apple-border);
+  background-color: var(--apple-bg-primary);
   transition: all 0.2s ease;
 }
 
 .filter-input:hover {
-  border-color: #86b7fe;
+  border-color: var(--apple-blue);
 }
 
 .filter-input:focus {
-  border-color: #006edc;
-  box-shadow: var(--apple-focus-shadow);
+  border-color: var(--apple-blue);
+  box-shadow: 0 0 0 3px rgba(0,122,255,0.1);
+  outline: none;
 }
 
-/* Filter form buttons */
-#filter-form .btn {
-  padding: 4px 12px;
-  font-size: 13px;
-  font-weight: 500;
-  border-radius: 6px;
-  height: 30px;
-  display: inline-flex;
+/* Filter Buttons Container */
+.filter-buttons {
+  display: flex;
+  gap: var(--apple-spacing-sm);
+  margin-left: auto;
+}
+
+/* Filter Form Layout */
+.filter-form-content {
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  justify-content: center;
-  gap: 6px;
+  gap: var(--apple-spacing-md);
+  padding: var(--apple-spacing-md);
 }
 
-#filter-form .btn-success {
-  background-color: var(--bs-primary);
-  border-color: var(--bs-primary);
-}
-
-#filter-form .btn-warning {
-  background-color: #ff9500;
-  border-color: #ff9500;
-}
-
-#filter-form .btn-outline-secondary {
-  border-color: var(--apple-border-color);
-  color: var(--apple-text-primary);
-}
-
-#filter-form .btn-outline-secondary:hover {
-  background-color: var(--apple-bg-hover);
-  border-color: var(--apple-border-color);
-}
-
-/* Responsive styles */
-@media (max-width: 900px) {
+/* Responsive Adjustments */
+@media (max-width: 768px) {
   .filter-group {
     width: 100%;
-    margin-right: 0;
+    min-width: unset;
   }
 
   .filter-label {
-    width: 85px;
+    width: 100px;
     text-align: left;
   }
 
   .filter-input {
+    max-width: none;
+  }
+
+  .filter-buttons {
     width: 100%;
-  }
-
-  #filter-form .d-flex.flex-wrap {
-    flex-direction: column !important;
-    align-items: stretch !important;
-    gap: 8px !important;
-  }
-
-  #filter-form .ms-auto {
-    margin-left: 0 !important;
-    margin-top: 12px;
-    justify-content: flex-start !important;
-    gap: 8px !important;
-  }
-
-  #filter-form .btn {
-    flex: 1;
+    margin-left: 0;
+    margin-top: var(--apple-spacing-sm);
   }
 }

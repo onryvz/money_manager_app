@@ -1,23 +1,112 @@
 /* Autocomplete suggestions */
 .suggestion-list {
-  background: #fff;
-  border: 1px solid var(--apple-border-color);
-  max-height: 150px;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--apple-bg-primary);
+  border: 1px solid var(--apple-border);
+  border-radius: var(--apple-radius-md);
+  box-shadow: var(--apple-shadow-lg);
+  max-height: 200px;
   overflow-y: auto;
-  z-index: 1000;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  transition: border 0.2s, box-shadow 0.2s;
-  padding: 0;
+  z-index: 1090;
+  margin-top: 4px;
+  padding: var(--apple-spacing-xs);
 }
 
 .suggestion-list:empty,
 .suggestion-list.d-none {
   display: none !important;
-  border: none !important;
-  box-shadow: none !important;
-  padding: 0 !important;
+  opacity: 0;
+  transform: translateY(-10px);
+  pointer-events: none;
 }
 
 .table-responsive {
   overflow: visible !important;
+}
+
+/* Suggestion Items */
+.suggestion-item {
+  padding: var(--apple-spacing-sm) var(--apple-spacing-md);
+  font-size: 13px;
+  color: var(--apple-text-primary);
+  border-radius: var(--apple-radius-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: var(--apple-spacing-sm);
+}
+
+.suggestion-item:hover {
+  background: var(--apple-bg-secondary);
+}
+
+.suggestion-item.active {
+  background: var(--apple-blue);
+  color: white;
+}
+
+/* Custom Scrollbar */
+.suggestion-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.suggestion-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.suggestion-list::-webkit-scrollbar-thumb {
+  background: var(--apple-border);
+  border-radius: 4px;
+}
+
+.suggestion-list::-webkit-scrollbar-thumb:hover {
+  background: var(--apple-text-secondary);
+}
+
+/* Loading State */
+.suggestion-list.loading {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  padding: var(--apple-spacing-md);
+  color: var(--apple-text-secondary);
+  font-size: 13px;
+}
+
+/* Animation */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.suggestion-list:not(:empty) {
+  animation: slideIn 0.2s ease-out;
+}
+
+.list-group-item {
+  padding: var(--apple-spacing-sm) var(--apple-spacing-md);
+  border: none;
+  border-radius: var(--apple-radius-sm);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.list-group-item:hover {
+  background: var(--apple-bg-secondary);
+  color: var(--apple-blue);
+}
+
+.position-relative {
+  position: relative !important;
 }

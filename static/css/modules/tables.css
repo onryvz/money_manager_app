@@ -1,0 +1,102 @@
+/* Table Styling */
+.table-container {
+  background: var(--apple-bg-primary);
+  border-radius: var(--apple-radius-lg);
+  box-shadow: var(--apple-shadow-md);
+  overflow: hidden;
+  margin-bottom: var(--apple-spacing-lg);
+}
+
+.table {
+  margin: 0;
+  --bs-table-hover-bg: var(--apple-bg-secondary);
+}
+
+.table thead {
+  background: var(--apple-bg-secondary);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.table th {
+  padding: var(--apple-spacing-sm) var(--apple-spacing-md);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--apple-text-secondary);
+  border-bottom: 1px solid var(--apple-border);
+  white-space: nowrap;
+}
+
+.table td {
+  padding: var(--apple-spacing-xs) var(--apple-spacing-md);
+  vertical-align: middle;
+  border-bottom: 1px solid var(--apple-border);
+  font-size: 14px;
+}
+
+/* Table Form Controls */
+.table .form-control,
+.table .form-select {
+  padding: 4px 8px;
+  height: 32px;
+  font-size: 13px;
+  border-radius: var(--apple-radius-md);
+  border-color: transparent;
+  background-color: transparent;
+}
+
+.table .form-control:hover,
+.table .form-select:hover {
+  border-color: var(--apple-border);
+  background-color: var(--apple-bg-primary);
+}
+
+.table .form-control:focus,
+.table .form-select:focus {
+  border-color: var(--apple-blue);
+  background-color: var(--apple-bg-primary);
+  box-shadow: 0 0 0 3px rgba(0,122,255,0.1);
+}
+
+/* Table Action Buttons */
+.table .btn {
+  padding: 4px 8px;
+  font-size: 13px;
+}
+
+.table .btn-danger {
+  opacity: 0.7;
+}
+
+.table tr:hover .btn-danger {
+  opacity: 1;
+}
+
+/* New Row Styling */
+.table tr.new-row {
+  background-color: var(--apple-bg-secondary);
+}
+
+.table tr.new-row td {
+  padding: var(--apple-spacing-sm) var(--apple-spacing-md);
+}
+
+/* Field Validation States */
+.table .is-valid {
+  border-color: var(--apple-green) !important;
+  background-color: rgba(52, 199, 89, 0.1) !important;
+}
+
+/* Responsive Table */
+@media (max-width: 768px) {
+  .table-responsive {
+    border-radius: var(--apple-radius-lg);
+    background: var(--apple-bg-primary);
+    box-shadow: var(--apple-shadow-md);
+  }
+  
+  .table th {
+    white-space: nowrap;
+  }
+}
