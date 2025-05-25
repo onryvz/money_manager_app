@@ -9,7 +9,11 @@ Kişisel gelir-gider ve bütçe takibini kolaylaştırmak için geliştirilmiş,
 - 📥 Excel dosyasından (`money-manager.xlsx`) veri aktarımı
 - 📊 Anasayfada gelir-gider grafiği (Chart.js)
 - ✅ İşlem ekleme, düzenleme ve silme
-- 📂 Hesap ve kategori yönetimi
+- ↩️ Son yapılan işlemi geri alma (Undo)
+- 🔍 Akıllı arama ve otomatik tamamlama
+- 📅 Tarih aralığına göre filtreleme
+- 📂 Hesap ve kategori bazlı filtreleme
+- 💡 Akıllı öneriler (benzer işlemler için)
 - 🎨 Temiz, sade ve responsive kullanıcı arayüzü
 
 ---
@@ -22,6 +26,8 @@ Kişisel gelir-gider ve bütçe takibini kolaylaştırmak için geliştirilmiş,
 - SQLAlchemy (SQLite)
 - Pandas + openpyxl
 - Chart.js
+- Bootstrap 5
+- JavaScript (ES6+)
 
 ---
 
@@ -34,20 +40,22 @@ money_manager_app/
 ├── models.py               # Veritabanı modelleri
 ├── routes.py               # Route tanımlamaları
 ├── utils/
-│   └── load_excel.py       # Excel'den veritabanına veri yükleyici
+│   └── load_excel.py      # Excel'den veritabanına veri yükleyici
 │
 ├── templates/
-│   ├── base.html           # Tüm sayfaların temel şablonu
-│   ├── dashboard.html      # Anasayfa
-│   ├── transactions.html   # İşlem listesi
+│   ├── base.html          # Tüm sayfaların temel şablonu
+│   ├── dashboard.html     # Anasayfa
+│   ├── transactions.html  # İşlem listesi
 │   └── ...                 
 │
 ├── static/
 │   ├── css/
+│   │   └── style.css     # Özel CSS stilleri
 │   ├── js/
+│   │   └── charts.js     # Grafik yönetimi
 │   └── img/
 │
-├── money-manager.xlsx      # Örnek Excel dosyası
+├── money-manager.xlsx     # Örnek Excel dosyası
 └── README.md
 ```
 
@@ -89,9 +97,13 @@ flask run
 - [x] Excel verilerinin yüklenmesi
 - [x] İşlem yönetimi (CRUD)
 - [x] Grafik gösterimi
+- [x] İşlem geri alma (Undo)
+- [x] Akıllı arama ve öneriler
+- [x] Gelişmiş filtreler
+- [ ] Toplu işlem yönetimi
+- [ ] Gelişmiş grafikler ve raporlar
 - [ ] Bütçe modülü
 - [ ] Hedef modülü
-- [ ] Gelişmiş grafikler ve raporlar
 - [ ] Kullanıcı desteği
 - [ ] Yayınlama (cloud)
 
